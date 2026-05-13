@@ -1,0 +1,8 @@
+VisDrone Dataset EDA Summary
+==================================================
+Train images: 6471
+Validation images: 548
+Classes kept: 0(pedestrian), 1(people), 3(car)
+Remapped classes: 0=human, 1=car
+
+Challenges: Objects occupy very few pixels due to aerial viewpoint, Many overlapping objects in crowded scenes, Objects vary dramatically in size (near vs far), Cars dominate, other classes underrepresented, Objects frequently blocked by buildings/trees, Some regions lack sufficient detail for detection, Variations in brightness, shadows, and conditions
