@@ -1,69 +1,57 @@
-﻿# Drone Human Detection & Counting System
+# Drone Human Detection and Tracking with YOLOv8
 
-A computer vision pipeline for detecting and counting humans and cars in drone/aerial imagery using **YOLOv8n** trained on the **VisDrone** dataset. Includes per-image human counting, FPS benchmarking, and ByteTrack-based object tracking.
+A computer vision pipeline for detecting and counting humans and cars in drone imagery using `YOLOv8n`, the `VisDrone` dataset, and ByteTrack-based tracking. This repo is useful in the portfolio because it includes concrete metrics, visible limitations, and an end-to-end experiment flow from dataset prep to tracked video output.
 
----
+**Status:** Experimental CV pipeline  
+**Stack:** Python, Jupyter Notebook, Ultralytics YOLOv8, OpenCV, ByteTrack  
+**Focus:** Detection experiments, aerial vision, model evaluation
 
-## Features
+## Why this project
 
-- Dataset EDA with class distribution and sample visualizations
-- Class filtering — pedestrian, people, car remapped to `human(0)` and `car(1)`
-- YOLOv8n training (25 epochs, imgsz=640, batch=16)
-- Human and car detection with colored bounding boxes
-- Per-image human counting with overlay
-- FPS benchmarking (~35 FPS inference)
-- ByteTrack tracking with unique human ID counting
-- LLM-generated project summary (Groq Llama 3.3)
+Aerial detection is difficult because targets are small, dense, and often occluded. This project explores that problem with a compact detection model and makes the tradeoffs visible through measured performance instead of only polished output visuals.
 
-## Requirements
+## Core capabilities
 
-- Python 3.10+
-- CUDA-capable GPU (T4 recommended)
-- Kaggle account (for dataset download)
-- Groq API key (optional, for LLM summary)
+- Perform dataset EDA and class distribution analysis.
+- Remap VisDrone labels into a simplified `human` and `car` task.
+- Train a `YOLOv8n` detector on the filtered dataset.
+- Render per-image counts and tracked output videos.
+- Report detection quality and inference speed.
 
-## Installation
+## Architecture list
 
-```bash
-pip install ultralytics kaggle opencv-python groq
+1. Data preparation layer
+   a. VisDrone download and filtering  
+   b. Class remapping to `human(0)` and `car(1)`
+2. Training layer
+   a. YOLO dataset configuration  
+   b. Model training and validation on aerial imagery
+3. Inference layer
+   a. Bounding-box prediction on images and video  
+   b. Human-count overlays and display outputs
+4. Tracking and evaluation layer
+   a. ByteTrack-based identity tracking  
+   b. Metrics, FPS benchmarking, and demo outputs
+
+## Implementation diagram
+
+```mermaid
+flowchart LR
+    Dataset[VisDrone Dataset] --> Prep[Filter + Remap Classes]
+    Prep --> Config[YOLO Dataset Config]
+    Config --> Train[YOLOv8n Training]
+    Train --> Weights[Trained Weights]
+    Weights --> Detect[Detection on Images / Video]
+    Detect --> Count[Human Count Overlay]
+    Detect --> Track[ByteTrack Tracking]
+    Track --> Video[Tracked Output Video]
+    Train --> Metrics[Evaluation Metrics + FPS]
 ```
-
-## Dataset
-
-**VisDrone Dataset (2019 DET track)**
-
-Download automatically via Kaggle API or manually from:
-https://www.kaggle.com/datasets/banuprasadb/visdrone-dataset
-
-## Project Structure
-
-```
-Yolo_Detection_Starter/
-├── visdrone_yolo/          # Preprocessed dataset (human + car only)
-│   ├── images/train/       # Training images
-│   ├── images/val/         # Validation images
-│   ├── labels/train/       # YOLO format labels
-│   └── labels/val/         # YOLO format labels
-├── counted_outputs/        # Images with human count overlay
-├── display_outputs/        # Images with human + car counts
-├── runs/detect/train/      # Trained model and plots
-├── runs/track/             # ByteTrack output videos
-├── class_distribution.png  # EDA visualization
-├── dataset_eda_summary.txt # Dataset analysis
-└── visdrone.yaml           # YOLO dataset config
-```
-
-## Usage
-
-1. Set Kaggle API credentials in the notebook
-2. Run all cells in order
-3. Training takes ~40 minutes on T4 GPU
-4. Final outputs saved in `display_outputs/` and `track_output/`
 
 ## Results
 
 | Metric | Value |
-|---|---|
+|---|---:|
 | Overall mAP50 | 0.557 |
 | Human mAP50 | 0.390 |
 | Car mAP50 | 0.723 |
@@ -71,22 +59,43 @@ Yolo_Detection_Starter/
 | Car Recall | 0.690 |
 | Inference FPS | ~35 |
 
+## Project structure
+
+```text
+Yolo_Detection_Starter/
+├── ANTS_Second_Evaluation_for_Drone_YOLO (1).ipynb
+├── class_distribution.png
+├── dataset_eda_summary.txt
+├── sample_*.png
+├── tracked_output.mp4
+├── tracked_humans_only.mp4
+└── val_video.mp4
+```
+
+## Run locally
+
+```bash
+pip install ultralytics kaggle opencv-python groq
+```
+
+Then open the notebook and run the cells in order.
+
+## Lessons from the results
+
+- Human detection remains much weaker than car detection because aerial humans are small and often partially occluded.
+- The model is fast enough for lightweight experimentation, but not accurate enough for safety-critical deployment.
+- The pipeline is more valuable as a learning and evaluation build than as a finished production detector.
+
 ## Limitations
 
-- Human detection is weak (mAP50 only 0.39) due to small object sizes in aerial imagery
-- Low recall (0.347) — ~65% of humans missed
-- Objects below 30 pixels are rarely detected
-- Heavy occlusion causes missed detections
+- Human mAP50 is only `0.390`
+- Recall is low enough that many humans are missed
+- Objects below roughly 30 pixels are difficult to detect
+- Crowded scenes and occlusion remain failure cases
 
-## Demo
+## Next improvements
 
-A 3-5 minute demonstration video covers:
-- Dataset EDA
-- Training loss curves
-- Sample detection outputs
-- ByteTrack tracking visualization
-- Metrics and limitations discussion
-
-## License
-
-MIT
+- Try a larger YOLO variant
+- Add small-object-focused augmentation
+- Evaluate better tracking metrics
+- Extend the notebook into a proper reproducible training package
